@@ -18,6 +18,7 @@ export class EmployeeComponent implements OnInit {
 
     constructor(private _dataService: DataService, private _dialog: MatDialog, private _snackBar: MatSnackBar) {
         this.employees = [];
+        this.departments = [];
     }
 
     ngOnInit() {

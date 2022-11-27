@@ -21,9 +21,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { AdminComponent } from './admin/admin.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { DepartmentComponent } from './departments/department.component';
+import { DepartmentModalComponent } from './departments/modal/department-modal.component';
 
 @NgModule({
-    declarations: [AppComponent, EmployeeComponent, EmployeeModalComponent, AdminComponent],
+    declarations: [AppComponent, EmployeeComponent, EmployeeModalComponent, AdminComponent, DepartmentComponent, DepartmentModalComponent],
     imports: [
         BrowserModule,
         FormsModule,
@@ -41,7 +43,7 @@ import { MatSelectModule } from '@angular/material/select';
         MatDialogModule,
         MatDividerModule,
         MatSnackBarModule,
-        MatSelectModule
+        MatSelectModule,
     ],
     providers: [],
     bootstrap: [AppComponent],
