@@ -23,9 +23,20 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { DepartmentComponent } from './departments/department.component';
 import { DepartmentModalComponent } from './departments/modal/department-modal.component';
+import { ProjectsComponent } from './projects/projects.component';
+import { ProjectsModalComponent } from './projects/modal/projects-modal.component';
 
 @NgModule({
-    declarations: [AppComponent, EmployeeComponent, EmployeeModalComponent, AdminComponent, DepartmentComponent, DepartmentModalComponent],
+    declarations: [
+        AppComponent,
+        EmployeeComponent,
+        EmployeeModalComponent,
+        AdminComponent,
+        DepartmentComponent,
+        DepartmentModalComponent,
+        ProjectsComponent,
+        ProjectsModalComponent,
+    ],
     imports: [
         BrowserModule,
         FormsModule,

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { IEmployee } from './models/employee.interface';
 import { firstValueFrom, Observable } from 'rxjs';
 import { IDepartment } from './models/department.interface';
+import { IProject } from './models/project.interface';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
@@ -38,6 +39,22 @@ export class DataService {
 
     createDepartment(department: IDepartment): Observable<void> {
         return this._httpClient.post<void>(`http://localhost:8080/api/departments`, department, { headers: this._getCorsHeaders() });
+    }
+
+    getProjects(): Observable<{ projects: IProject[] }> {
+        return this._httpClient.get<{ projects: IProject[] }>(`http://localhost:8080/api/projects`, { headers: this._getCorsHeaders() });
+    }
+
+    deleteProject(id: string): Observable<void> {
+        return this._httpClient.delete<void>(`http://localhost:8080/api/projects/${id}`, { headers: this._getCorsHeaders() });
+    }
+
+    updateProject(project: IProject): Observable<void> {
+        return this._httpClient.put<void>(`http://localhost:8080/api/projects/${project.projectNumber}`, project, { headers: this._getCorsHeaders() });
+    }
+
+    createProject(project: IProject): Observable<void> {
+        return this._httpClient.post<void>(`http://localhost:8080/api/projects`, project, { headers: this._getCorsHeaders() });
     }
 
     seedData(): Promise<void> {

@@ -77,9 +77,6 @@ app.delete('/api/employees/:id', async (req, res) => {
         const result = await dbController.delete(TableName.Employee, 'ID', req.params.id);
         res.status(200).json(result);
     } catch (error) {
-        if (error === 'SQLITE_CONSTRAINT') {
-            res.status(409).json({ message: 'Die ' });
-        }
         res.status(500).json({ message: 'Der Benutzer konnte nicht gelöscht werden.' });
     }
 });
@@ -107,11 +104,7 @@ app.post('/api/departments', async (req, res) => {
     const department: IDepartment = req.body;
 
     try {
-        const result = await dbController.insert(
-            TableName.Department,
-            'ID, Fax',
-            `"${department.id}", "${department.fax}"`
-        );
+        const result = await dbController.insert(TableName.Department, 'ID, Fax', `"${department.id}", "${department.fax}"`);
         res.status(200).json(result);
     } catch (error) {
         if (error === 'SQLITE_CONSTRAINT') {
@@ -126,12 +119,7 @@ app.put('/api/departments/:id', async (req, res) => {
     const department: IDepartment = req.body;
 
     try {
-        const result = await dbController.update(
-            TableName.Department,
-            `Fax = "${department.fax}"`,
-            'ID',
-            req.params.id
-        );
+        const result = await dbController.update(TableName.Department, `Fax = "${department.fax}"`, 'ID', req.params.id);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: 'Fehler: Die Abteilung konnte nicht geupdated werden.' });
@@ -140,17 +128,76 @@ app.put('/api/departments/:id', async (req, res) => {
 
 app.delete('/api/departments/:id', async (req, res) => {
     try {
+        const employees: any = await dbController.getAll(TableName.Employee);
+        const hasEmployeesInDepartment = employees.some((employee) => employee.Abteilung === req.params.id);
+        if (hasEmployeesInDepartment) {
+            return res.status(409).json({ message: 'Die Abteilung kann nicht gelöscht werden: Mindestens ein Mitarbeiter gehört zu dieser Abteilung.' });
+        }
+
         const result = await dbController.delete(TableName.Department, 'ID', req.params.id);
         res.status(200).json(result);
     } catch (error) {
-        if (error === 'SQLITE_CONSTRAINT') {
-            res.status(409).json({ message: 'Die ' });
-        }
         res.status(500).json({ message: 'Die Abteilung konnte nicht gelöscht werden.' });
     }
 });
 
 // #####################
+
+// ########### Project ###########
+
+app.get('/api/projects', async (req, res) => {
+    try {
+        const result = await dbController.getAll(TableName.Project);
+        const mappedResult: IProject[] = (result as any[]).map((value) => {
+            return {
+                projectNumber: value.AuftragsNummer,
+                status: value.Status,
+            };
+        });
+        res.status(200).json({ projects: mappedResult });
+    } catch (error) {
+        res.status(500).json({ message: 'Something went wrong.' });
+    }
+});
+
+app.post('/api/projects', async (req, res) => {
+    const project: IProject = req.body;
+
+    try {
+        const result = await dbController.insert(TableName.Project, 'AuftragsNummer, Status', `"${project.projectNumber}", "${project.status}"`);
+        res.status(200).json(result);
+    } catch (error) {
+        if (error === 'SQLITE_CONSTRAINT') {
+            return res
+                .status(409)
+                .json({ message: `Fehler: Projekt kann nicht erstellt werden. Ein Projekt mit der Auftragsnummer '${project.projectNumber}' existiert bereits.` });
+        }
+
+        res.status(500).json({ message: 'Fehler: Das Projekt konnte nicht erstellt werden.' });
+    }
+});
+
+app.put('/api/projects/:id', async (req, res) => {
+    const project: IProject = req.body;
+
+    try {
+        const result = await dbController.update(TableName.Project, `Status = "${project.status}"`, 'AuftragsNummer', req.params.id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Fehler: Das Projekt konnte nicht geupdated werden.' });
+    }
+});
+
+app.delete('/api/projects/:id', async (req, res) => {
+    try {
+        const result = await dbController.delete(TableName.Project, 'AuftragsNummer', req.params.id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'DAs Projekt konnte nicht gelöscht werden.' });
+    }
+});
+
+// ######################
 
 // ########### Admin ###########
 
