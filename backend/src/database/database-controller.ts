@@ -38,10 +38,14 @@ export class DatabaseController {
     public getAllEmployees() {
         return new Promise((resolve, reject) => {
             const query = `SELECT ${TableName.Employee}.ID, ${TableName.Employee}.Abteilung, ${TableName.Employee}.Vorname,
-                                  ${TableName.Employee}.Nachname, ${TableName.Department}.Fax
+                                  ${TableName.Employee}.Nachname, ${TableName.Department}.Fax, 
+                                  GROUP_CONCAT(${TableName.EmployeeToProject}.AuftragsNummer) AS AuftragsNummern
                            FROM ${TableName.Employee}
-                           LEFT JOIN ${TableName.Department}
+                           LEFT JOIN ${TableName.Department}                           
                            ON ${TableName.Employee}.Abteilung = ${TableName.Department}.ID
+                           LEFT JOIN ${TableName.EmployeeToProject}
+                           ON ${TableName.Employee}.ID = ${TableName.EmployeeToProject}.MitarbeiterID
+                           GROUP BY ${TableName.Employee}.ID
                             `;
             this._db.all(query, (error, rows) => {
                 if (error) {
@@ -53,14 +57,40 @@ export class DatabaseController {
         });
     }
 
-    public get(table: TableName, columnName: string, id: string) {
+    public getAllProjects() {
+        return new Promise((resolve, reject) => {
+            const query = `SELECT ${TableName.Project}.AuftragsNummer,
+                           ${TableName.Project}.Status, ${TableName.Employee}.ID, 
+                           GROUP_CONCAT((${TableName.Employee}.Vorname || " " || ${TableName.Employee}.Nachname)) AS Mitarbeiter
+                           FROM ${TableName.Project}
+                           LEFT JOIN ${TableName.EmployeeToProject}
+                           ON ${TableName.Project}.AuftragsNummer = ${TableName.EmployeeToProject}.AuftragsNummer
+                           LEFT JOIN ${TableName.Employee}
+                           ON ${TableName.Employee}.ID = ${TableName.EmployeeToProject}.MitarbeiterID 
+                           GROUP BY ${TableName.Project}.AuftragsNummer
+                            `;
+            this._db.all(query, (error, rows) => {
+                if (error) {
+                    return reject(error);
+                }
+
+                resolve(rows);
+            });
+        });
+    }
+
+    public get(table: TableName, columnName: string, id: string, multiple = false) {
         return new Promise((resolve, reject) => {
             this._db.all(`SELECT * FROM ${table} WHERE ${columnName} = "${id}";`, (error, result) => {
                 if (error) {
                     return reject(error);
                 }
 
-                resolve(result ? result[0] : {});
+                if (multiple) {
+                    resolve(result);
+                } else {
+                    resolve(result ? result[0] : {});
+                }
             });
         });
     }
@@ -98,6 +128,21 @@ export class DatabaseController {
     public delete(table: TableName, idColumn: string, id: string) {
         return new Promise<void>((resolve, reject) => {
             const query = `DELETE FROM ${table} WHERE ${idColumn} = "${id}";`;
+            this._db.run(query, (error, result) => {
+                if (error?.code) {
+                    console.error(`Deletion failed: `, error.message);
+                    console.error(`Query: `, query);
+                    return reject(error.code);
+                }
+
+                resolve();
+            });
+        });
+    }
+
+    public deleteLink(projectId: string, employeeId: string) {
+        return new Promise<void>((resolve, reject) => {
+            const query = `DELETE FROM ${TableName.EmployeeToProject} WHERE "MitarbeiterID" = "${employeeId}" AND "AuftragsNummer" = "${projectId}";`;
             this._db.run(query, (error, result) => {
                 if (error?.code) {
                     console.error(`Deletion failed: `, error.message);

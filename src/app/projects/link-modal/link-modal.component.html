@@ -1,0 +1,29 @@
+<h1 mat-dialog-title>{{ data.title }}</h1>
+<div mat-dialog-content>
+    <div style="display: flex">
+        <div>
+            <mat-form-field appearance="fill">
+                <mat-label>Mitarbeiter</mat-label>
+                <mat-select [(ngModel)]="selectedEmployee">
+                    <mat-option *ngFor="let employee of allAvailableEmployees" [value]="employee"> {{ employee.firstName }} {{ employee.lastName }} </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div style="margin-left: 8px; margin-top: 8px">
+            <button mat-mini-fab color="primary" (click)="addEmployeeToProject()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+    </div>
+    <div *ngFor="let employee of assignedEmployees" style="display: flex; align-items: center">
+        <div>{{ employee.firstName }} {{ employee.lastName }}</div>
+        <div>
+            <button mat-icon-button color="primary" (click)="deleteProjectLink(employee)">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="close()">Fertig</button>
+</div>

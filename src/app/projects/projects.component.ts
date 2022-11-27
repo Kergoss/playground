@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProjectsModalComponent } from './modal/projects-modal.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IProject } from '../models/project.interface';
+import { LinkModalComponent } from './link-modal/link-modal.component';
 
 @Component({
     selector: 'scp-project',
@@ -19,10 +20,10 @@ export class ProjectsComponent implements OnInit {
     }
 
     ngOnInit() {
-        this._initDepartments();
+        this._initProjects();
     }
 
-    private async _initDepartments() {
+    private async _initProjects() {
         try {
             const result = await firstValueFrom(this._dataService.getProjects());
             this.projects = result.projects;
@@ -71,7 +72,7 @@ export class ProjectsComponent implements OnInit {
     public createProject(): void {
         const dialogRef = this._dialog.open(ProjectsModalComponent, {
             width: '500px',
-            data: { project: {}, title: 'Project erstellen', edit: false },
+            data: { project: {}, title: 'Projekt erstellen', edit: false },
         });
 
         dialogRef
@@ -90,6 +91,23 @@ export class ProjectsComponent implements OnInit {
                 } catch (error) {
                     this._snackBar.open(error?.error?.message, undefined, { duration: 5000 });
                 }
+            });
+    }
+
+    public async editUsersOnProject(project: IProject): Promise<void> {
+        const employees = await firstValueFrom(this._dataService.getEmployeesOfProject(project));
+        const result = await firstValueFrom(this._dataService.getEmployees());
+
+        const dialogRef = this._dialog.open(LinkModalComponent, {
+            width: '500px',
+            data: { assignedEmployees: employees, title: 'Mitarbeiter auf dem Projekt verwalten', allEmployees: result.employees, projectId: project.projectNumber },
+        });
+
+        dialogRef
+            .afterClosed()
+            .pipe(take(1))
+            .subscribe(async () => {
+                this._initProjects();
             });
     }
 }

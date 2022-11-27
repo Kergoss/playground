@@ -57,6 +57,18 @@ export class DataService {
         return this._httpClient.post<void>(`http://localhost:8080/api/projects`, project, { headers: this._getCorsHeaders() });
     }
 
+    getEmployeesOfProject(project: IProject): Observable<void> {
+        return this._httpClient.get<void>(`http://localhost:8080/api/employees-of-project/${project.projectNumber}`, { headers: this._getCorsHeaders() });
+    }
+
+    deleteEmployeeProjectLink(employeeId: string, projectId: string): Promise<void> {
+        return firstValueFrom(this._httpClient.delete<void>(`http://localhost:8080/api/employees-of-project/${projectId}/${employeeId}`, { headers: this._getCorsHeaders() }));
+    }
+
+    addEmployeeToProject(employeeId: string, projectId: string): Promise<void> {
+        return firstValueFrom(this._httpClient.post<void>(`http://localhost:8080/api/employees-of-project/${projectId}/${employeeId}`, { headers: this._getCorsHeaders() }));
+    }
+
     seedData(): Promise<void> {
         return firstValueFrom(this._httpClient.post<any>(`http://localhost:8080/api/seed`, { headers: this._getCorsHeaders() }));
     }

@@ -29,7 +29,8 @@ app.get('/api/employees', async (req, res) => {
                 firstName: value.Vorname,
                 lastName: value.Nachname,
                 department: value.Abteilung,
-                fax: value.Fax
+                fax: value.Fax,
+                projects: value.AuftragsNummern?.replace(/,/g, ', '),
             };
         });
         res.status(200).json({ employees: mappedResult });
@@ -148,11 +149,12 @@ app.delete('/api/departments/:id', async (req, res) => {
 
 app.get('/api/projects', async (req, res) => {
     try {
-        const result = await dbController.getAll(TableName.Project);
+        const result = await dbController.getAllProjects();
         const mappedResult: IProject[] = (result as any[]).map((value) => {
             return {
                 projectNumber: value.AuftragsNummer,
                 status: value.Status,
+                employees: value.Mitarbeiter?.replace(/,/g, ', '),
             };
         });
         res.status(200).json({ projects: mappedResult });
@@ -194,7 +196,38 @@ app.delete('/api/projects/:id', async (req, res) => {
         const result = await dbController.delete(TableName.Project, 'AuftragsNummer', req.params.id);
         res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ message: 'DAs Projekt konnte nicht gelöscht werden.' });
+        res.status(500).json({ message: 'Das Projekt konnte nicht gelöscht werden.' });
+    }
+});
+
+app.delete('/api/employees-of-project/:projectId/:employeeId', async (req, res) => {
+    try {
+        const result = await dbController.deleteLink(req.params.projectId, req.params.employeeId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Die Projektverknüpfungen konnte nicht gelöscht werden.' });
+    }
+});
+
+app.post('/api/employees-of-project/:projectId/:employeeId', async (req, res) => {
+    try {
+        const result = await dbController.insert(TableName.EmployeeToProject, 'AuftragsNummer, MitarbeiterID', `"${req.params.projectId}", "${req.params.employeeId}"`);
+        res.status(200).json(result);
+    } catch (error) {
+        if (error === 'SQLITE_CONSTRAINT') {
+            return res.status(409).json({ message: `Fehler: Der Mitarbeiter kann nicht zu diesem Projekt hinzugefügt werden, da er bereits an diesem Projekt arbeitet.` });
+        }
+
+        res.status(500).json({ message: 'Fehler: Der Mitarbeiter konnte nicht zu diesem Projekt hinzugefügt werden.' });
+    }
+});
+
+app.get('/api/employees-of-project/:id', async (req, res) => {
+    try {
+        const result = await dbController.get(TableName.EmployeeToProject, 'AuftragsNummer', req.params.id, true);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Die Projektverknüpfungen konnten nicht geladen werden.' });
     }
 });
 
@@ -238,6 +271,13 @@ app.post('/api/seed', async (req, res) => {
             } catch (err) {}
         }
 
+        for (let i = 0; i < mockProjectRelations.length; i++) {
+            try {
+                const relation = mockProjectRelations[i];
+                await dbController.insert(TableName.EmployeeToProject, 'MitarbeiterID, AuftragsNummer', `"${relation.id}", "${relation.projectNumber}"`);
+            } catch (err) {}
+        }
+
         res.status(200).json({ message: 'Beispieldaten wurden erfolgreich eingefügt.' });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong.' });
@@ -269,4 +309,16 @@ const mockProjects: IProject[] = [
     { projectNumber: '9800001', status: ProjectStatus.Created },
     { projectNumber: '9800002', status: ProjectStatus.InProgress },
     { projectNumber: '9800003', status: ProjectStatus.Finalized },
+];
+
+const mockProjectRelations = [
+    { projectNumber: '9800001', id: '1' },
+    { projectNumber: '9800001', id: '2' },
+    { projectNumber: '9800001', id: '3' },
+    { projectNumber: '9800001', id: '4' },
+    { projectNumber: '9800002', id: '1' },
+    { projectNumber: '9800002', id: '4' },
+    { projectNumber: '9800003', id: '1' },
+    { projectNumber: '9800003', id: '6' },
+    { projectNumber: '9800003', id: '7' },
 ];

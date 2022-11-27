@@ -4,4 +4,5 @@ export interface IEmployee {
     lastName: string;
     department: string;
     fax?: string;
+    projects?: string;
 }

@@ -25,6 +25,7 @@ import { DepartmentComponent } from './departments/department.component';
 import { DepartmentModalComponent } from './departments/modal/department-modal.component';
 import { ProjectsComponent } from './projects/projects.component';
 import { ProjectsModalComponent } from './projects/modal/projects-modal.component';
+import { LinkModalComponent } from './projects/link-modal/link-modal.component';
 
 @NgModule({
     declarations: [
@@ -36,6 +37,7 @@ import { ProjectsModalComponent } from './projects/modal/projects-modal.componen
         DepartmentModalComponent,
         ProjectsComponent,
         ProjectsModalComponent,
+        LinkModalComponent,
     ],
     imports: [
         BrowserModule,
