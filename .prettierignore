@@ -1,0 +1,11 @@
+# Add files here to ignore them from prettier formatting
+
+/dist
+/node_modules
+/backend/dist
+/coverage
+/tools
+**/assets/**
+**/*.cake
+**/*.sh
+**/*.ps1

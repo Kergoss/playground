@@ -1,0 +1,12 @@
+<div>
+    <button (click)="seedData()" mat-button color="primary">Datenbank mit Testdaten füllen</button>
+    <button (click)="clickedClearData = true" mat-button color="accent">Alle Daten löschen</button>
+</div>
+
+<div *ngIf="clickedClearData">
+    <mat-divider></mat-divider>
+    <p style="margin-top: 8px; padding-left: 8px">Achtung! Dieser Vorgang löscht alle Daten aus der Datenbank.</p>
+    <button (click)="clickedClearData = false" mat-button color="basic">Abbrechen</button>
+    <button (click)="clearData()" mat-button color="accent">Alles löschen</button>
+    <mat-divider></mat-divider>
+</div>
