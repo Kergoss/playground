@@ -35,6 +35,24 @@ export class DatabaseController {
         });
     }
 
+    public getAllEmployees() {
+        return new Promise((resolve, reject) => {
+            const query = `SELECT ${TableName.Employee}.ID, ${TableName.Employee}.Abteilung, ${TableName.Employee}.Vorname,
+                                  ${TableName.Employee}.Nachname, ${TableName.Department}.Fax
+                           FROM ${TableName.Employee}
+                           LEFT JOIN ${TableName.Department}
+                           ON ${TableName.Employee}.Abteilung = ${TableName.Department}.ID
+                            `;
+            this._db.all(query, (error, rows) => {
+                if (error) {
+                    return reject(error);
+                }
+
+                resolve(rows);
+            });
+        });
+    }
+
     public get(table: TableName, columnName: string, id: string) {
         return new Promise((resolve, reject) => {
             this._db.all(`SELECT * FROM ${table} WHERE ${columnName} = "${id}";`, (error, result) => {

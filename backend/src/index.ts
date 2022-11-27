@@ -22,13 +22,14 @@ const server = app.listen(8080, function () {
 
 app.get('/api/employees', async (req, res) => {
     try {
-        const result = await dbController.getAll(TableName.Employee);
+        const result = await dbController.getAllEmployees();
         const mappedResult: IEmployee[] = (result as any[]).map((value) => {
             return {
                 id: value.ID,
                 firstName: value.Vorname,
                 lastName: value.Nachname,
                 department: value.Abteilung,
+                fax: value.Fax
             };
         });
         res.status(200).json({ employees: mappedResult });

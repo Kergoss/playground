@@ -90,7 +90,7 @@ export class EmployeeComponent implements OnInit {
         dialogRef
             .afterClosed()
             .pipe(take(1))
-            .subscribe(async (newEmployee) => {
+            .subscribe(async (newEmployee: IEmployee) => {
                 if (!newEmployee) {
                     return;
                 }
@@ -98,6 +98,7 @@ export class EmployeeComponent implements OnInit {
                 try {
                     await firstValueFrom(this._dataService.createEmployee(newEmployee));
 
+                    newEmployee.fax = this.departments.find((department) => department.id === newEmployee.department).fax;
                     this.employees.push(newEmployee);
                     this.employees = [...this.employees].sort((a, b) => (a.id > b.id ? 1 : a.id === b.id ? 0 : -1));
                 } catch (error) {
